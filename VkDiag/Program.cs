@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Mono.Options;
 using VkDiag.POCOs;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("vkdiag.Test")]
+
 namespace VkDiag;
 
 internal static partial class Program
@@ -22,7 +24,7 @@ internal static partial class Program
     private static bool disableLayers;
     private static bool ignoreHighPerfCheck;
 
-    private static bool everythingIsFine = true;
+    internal static bool everythingIsFine = true;
     private static bool hasBrokenEntries;
     private static bool hasProperVulkanDrivers;
     private static bool hasExplicitDriverReg;
@@ -54,8 +56,9 @@ internal static partial class Program
 
         await CheckVkDiagVersionAsync().ConfigureAwait(false);
         var osVer = CheckOs();
+        var windowsService = new WindowsPackageService();
         if (osVer.Major >= 10)
-            try { CheckAppxPackages(); } catch { }
+            try { CheckAppxPackages(windowsService); } catch { }
 
         var (hasInactiveGpus, hasVulkanGpus) = CheckGpuDrivers();
         if (!hasVulkanGpus)

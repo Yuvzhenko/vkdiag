@@ -13,18 +13,18 @@ internal static partial class Program
     ];
     // ReSharper restore StringLiteralTypo
     
-    private static void CheckAppxPackages()
+    internal static void CheckAppxPackages(IPackageService packageService)
     {
         var found = new List<(string name, string version)>();
         foreach (var pkg in KnownPackages)
         {
             try
             {
-                var pkgFullNameList = PackageManager.FindPackagesByPackageFamily(pkg.id);
+                var pkgFullNameList = packageService.FindPackages(pkg.id);
                 foreach (var pkgFullName in pkgFullNameList)
                 {
-                    var appStoreName = PackageManager.GetAppStoreName(pkgFullName, pkg.title);
-                    var ver = PackageManager.GetPackageVersion(pkgFullName, "");
+                    var appStoreName = packageService.GetName(pkgFullName, pkg.title);
+                    var ver = packageService.GetVersion(pkgFullName);
                     found.Add((appStoreName, ver));
                 }
             }
@@ -40,4 +40,10 @@ internal static partial class Program
                 WriteLogLine(ConsoleColor.DarkYellow, "!", $"    {pkg.name}{pkg.version}");
         }
     }
+    public class WindowsPackageService : IPackageService
+{
+    public IEnumerable<string> FindPackages(string id) => PackageManager.FindPackagesByPackageFamily(id);
+    public string GetVersion(string name) => PackageManager.GetPackageVersion(name, "");
+    public string GetName(string name, string title) => PackageManager.GetAppStoreName(name, title);
+}
 }
