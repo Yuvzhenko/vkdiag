@@ -182,6 +182,7 @@ public class GpuDriverInfoTests
         MethodInfo method = typeof(Program).GetMethod("CheckGpuDrivers", 
         BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
 
+        //saving the expection
         var exception = Record.Exception(() => method.Invoke(null, null));
         
         Assert.Null(exception);
@@ -195,6 +196,7 @@ public class GpuDriverInfoTests
         var _originalOutput = Console.Out;
         Console.SetOut(sw);
 
+        //Using redirection to get the private method
         MethodInfo method = typeof(Program).GetMethod("CheckGpuDrivers",
         BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
 
@@ -216,6 +218,7 @@ public class GpuDriverInfoTests
         var originalOut = Console.Out;
         Console.SetOut(sw);
 
+        //Using redirection to get the private method
         MethodInfo method = typeof(Program).GetMethod("CheckGpuDrivers",
         BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
 
@@ -231,4 +234,102 @@ public class GpuDriverInfoTests
 
 }
 
+public class VulkanMetainfoTests
+{
+    [Fact, Trait("Order", "6")]
+    public void CheckVulkanMeta_CorrectOutput_IntegrationTest()
+    {
+        //relocating a console output
+        using var sw = new System.IO.StringWriter();
+        var _originalOutput = Console.Out;
+        Console.SetOut(sw);
 
+        //Using redirection to get the private method
+        MethodInfo method = typeof(Program).GetMethod("CheckVulkanMeta",
+        BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
+
+        method.Invoke(null, null);
+
+        //saving the console output
+        string output = sw.ToString();
+
+        //matching the output with expections
+        Assert.Contains("Vulkan registration information:", output);
+        Assert.Contains("layers registration", output);
+    }
+    
+    [Fact]
+    public void CheckVulkanMeta_ExceptionThrowing_Test()
+    {
+        //Using redirection to get the private method
+        MethodInfo method = typeof(Program).GetMethod("CheckVulkanMeta",
+        BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
+
+        //saving the expection
+        var exception = Record.Exception(() => method.Invoke(null, null));
+
+        Assert.Null(exception);
+    }
+
+    [Theory]
+    [InlineData(@"{
+        ""layer"": {
+            ""name"": ""VK_LAYER_LUNARG_test"",
+            ""api_version"": ""1.3.204"",
+            ""description"": ""LunarG Test Layer vulkan layer"",
+            ""library_path"": "".\\test.dll""
+        }
+    }", "LunarG Test", "1.3.204" )]
+    [InlineData(@"{
+        ""layer"": {
+            ""name"": ""VK_LAYER_test"",
+            ""api_version"": ""9.45.222"",
+            ""description"": ""A Layer vulkan layer"",
+            ""library_path"": "".\\test.dll""
+        }
+    }", "A", "9.45.222" )]
+    [InlineData(@"{
+        ""layer"": {
+            ""name"": ""LAYER_LUNARG_test"",
+            ""api_version"": ""0.0.114"",
+            ""description"": ""The Test Layer vulkan layer"",
+            ""library_path"": "".\\test.dll""
+        }
+    }", "The Test", "0.0.114" )]
+    public void GetLayerInfo_ParseJSON_Test(string json_content, string expected_title, string version)
+    {
+        //converting versiong into the right type
+        Version expected_apiVer = new Version(version);
+
+        //creating a temp file
+        string temp_json_path = Path.Combine(Path.GetTempPath(), "test_layer.json");
+        File.WriteAllText(temp_json_path, json_content);
+        try
+        {
+            //Using redirection to get the private method
+            MethodInfo method = typeof(Program).GetMethod("GetLayerInfo",
+            BindingFlags.NonPublic | BindingFlags.Static, null, new[] {typeof(string)}, null);
+
+            //casting to untyped IEnumerable
+            var rawResult = method.Invoke(null, new object[] {temp_json_path});
+            var result = (System.Collections.IEnumerable)rawResult;
+
+            //using dynamic to get Item1, Item2 and Item3
+            dynamic first_entry = result.Cast<object>().First();
+
+            //matching
+            string title = first_entry.Item1;
+            Assert.Contains(expected_title, title);
+            Assert.DoesNotContain("vulkan layer", title);
+
+            Version apiVer = first_entry.Item3;
+            Assert.Equal(expected_apiVer.Major, apiVer.Major);
+            Assert.Equal(expected_apiVer.Minor, apiVer.Minor);
+        }
+        finally
+        {
+            //deleting the temp file
+            if (File.Exists(temp_json_path)) File.Delete(temp_json_path);
+        }
+    }
+}
