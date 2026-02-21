@@ -13,7 +13,7 @@ internal static partial class Program
     ];
     // ReSharper restore StringLiteralTypo
     
-    internal static void CheckAppxPackages(IPackageService packageService)
+    private static void CheckAppxPackages(IPackageService packageService)
     {
         var found = new List<(string name, string version)>();
         foreach (var pkg in KnownPackages)
