@@ -54,6 +54,11 @@ public class AppxPackagesTests
     [Fact]
     public void PackageIsFound()
     {
+        //Redirect Console.Out to capture the text written by WriteLogLine
+        using var sw = new System.IO.StringWriter();
+        var _originalOutput = Console.Out;
+        Console.SetOut(sw);
+        
         // Arrange: Simulate that one package was found
         var packagesFound = new List<string> { "Fake_Incompatible_Package" };
         var serviceWithPackage = new FakePackageService(packagesFound);
@@ -68,6 +73,9 @@ public class AppxPackagesTests
 
         // Assert
         Assert.False(Program.everythingIsFine);
+
+        //returning output to normal mode
+        Console.SetOut(_originalOutput);
     }
 
     [Fact]
@@ -92,23 +100,18 @@ public class AppxPackagesTests
 }
 
 [Collection("Console Tests")]
-public class LoggingMethodTests : IDisposable
+public class LoggingMethodTests
 {
-    public readonly StringWriter _consoleOutput;
-    public readonly TextWriter _originalOutput;
-
-    public LoggingMethodTests()
-    {
-        // Arrange: Redirect Console.Out to capture the text written by WriteLogLine
-        _consoleOutput = new StringWriter();
-        _originalOutput = Console.Out;
-        Console.SetOut(_consoleOutput);
-    }
 
     [Fact, Trait("Order", "1")]
     public void FormatText_Test()
     {
-        //Using redirection to get the private method
+        //Redirect Console.Out to capture the text written by WriteLogLine
+        using var sw = new System.IO.StringWriter();
+        var _originalOutput = Console.Out;
+        Console.SetOut(sw);
+
+        //Using reflection to get the private method
         MethodInfo method = typeof(Program).GetMethod("WriteLogLine",
          BindingFlags.NonPublic | BindingFlags.Static, null, 
          new[] {typeof(ConsoleColor), typeof(string), typeof(string)}, null);
@@ -116,14 +119,22 @@ public class LoggingMethodTests : IDisposable
         method.Invoke(null, new object[]{ConsoleColor.Green, "+", "Test Description"});
 
         //Veritify matches
-        string output = _consoleOutput.ToString().Trim();
+        string output = sw.ToString().Trim();
         Assert.Equal("[+] Test Description", output);
+
+        //returning output to normal mode
+        Console.SetOut(_originalOutput);
     }
 
     [Fact, Trait("Order", "2")]
     public void PreserveLeadingSpaces_Test()
     {
-        //Using redirection to get the private method
+        //Redirect Console.Out to capture the text written by WriteLogLine
+        using var sw = new System.IO.StringWriter();
+        var _originalOutput = Console.Out;
+        Console.SetOut(sw);
+
+        //Using reflection to get the private method
         MethodInfo method = typeof(Program).GetMethod("WriteLogLine",
          BindingFlags.NonPublic | BindingFlags.Static, null,
          new[] {typeof(ConsoleColor), typeof(string), typeof(string)}, null);
@@ -131,26 +142,31 @@ public class LoggingMethodTests : IDisposable
         //Using description with leading spaces
         method.Invoke(null, new object[]{ConsoleColor.Yellow, "!", "     Update available"});
 
-        string output = _consoleOutput.ToString().TrimEnd();
+        string output = sw.ToString().TrimEnd();
         Assert.Contains("     [!] Update available", output);
+
+        //returning output to normal mode
+        Console.SetOut(_originalOutput);
     }
 
     [Fact, Trait("Order", "3")]
     public void EmptyOverload_Test()
     {
-        //Using redirection to get the private method
+        //Redirect Console.Out to capture the text written by WriteLogLine
+        using var sw = new System.IO.StringWriter();
+        var _originalOutput = Console.Out;
+        Console.SetOut(sw);
+        
+        //Using reflection to get the private method
         MethodInfo method = typeof(Program).GetMethod("WriteLogLine",
          BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
 
         method.Invoke(null, null);
 
-        Assert.Contains('\u200b' + Environment.NewLine, _consoleOutput.ToString());
-    }
-    public void Dispose()
-    {
-        //Restore the original console output
+        Assert.Contains('\u200b' + Environment.NewLine, sw.ToString());
+
+        //returning output to normal mode
         Console.SetOut(_originalOutput);
-        _consoleOutput.Dispose();
     }
 }
 
@@ -178,6 +194,12 @@ public class GpuDriverInfoTests
     [Fact]
     public void Exception_Throwing_IntegrationTest()
     {
+        using var sw = new System.IO.StringWriter();
+        var _originalOutput = Console.Out;
+        Console.SetOut(sw);
+
+        sw.GetStringBuilder().Clear();
+
         //creating an exception and checking if the programs not crash
         MethodInfo method = typeof(Program).GetMethod("CheckGpuDrivers", 
         BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
@@ -186,6 +208,8 @@ public class GpuDriverInfoTests
         var exception = Record.Exception(() => method.Invoke(null, null));
         
         Assert.Null(exception);
+
+        Console.SetOut(_originalOutput);
     }
 
     [Fact, Trait("Order", "4")]
@@ -196,7 +220,7 @@ public class GpuDriverInfoTests
         var _originalOutput = Console.Out;
         Console.SetOut(sw);
 
-        //Using redirection to get the private method
+        //Using reflection to get the private method
         MethodInfo method = typeof(Program).GetMethod("CheckGpuDrivers",
         BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
 
@@ -218,7 +242,7 @@ public class GpuDriverInfoTests
         var originalOut = Console.Out;
         Console.SetOut(sw);
 
-        //Using redirection to get the private method
+        //Using reflection to get the private method
         MethodInfo method = typeof(Program).GetMethod("CheckGpuDrivers",
         BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
 
@@ -244,7 +268,7 @@ public class VulkanMetainfoTests
         var _originalOutput = Console.Out;
         Console.SetOut(sw);
 
-        //Using redirection to get the private method
+        //Using reflection to get the private method
         MethodInfo method = typeof(Program).GetMethod("CheckVulkanMeta",
         BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
 
@@ -256,12 +280,14 @@ public class VulkanMetainfoTests
         //matching the output with expections
         Assert.Contains("Vulkan registration information:", output);
         Assert.Contains("layers registration", output);
+
+        Console.SetOut(_originalOutput);
     }
     
     [Fact]
     public void CheckVulkanMeta_ExceptionThrowing_Test()
     {
-        //Using redirection to get the private method
+        //Using reflection to get the private method
         MethodInfo method = typeof(Program).GetMethod("CheckVulkanMeta",
         BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
 
@@ -306,7 +332,7 @@ public class VulkanMetainfoTests
         File.WriteAllText(temp_json_path, json_content);
         try
         {
-            //Using redirection to get the private method
+            //Using reflection to get the private method
             MethodInfo method = typeof(Program).GetMethod("GetLayerInfo",
             BindingFlags.NonPublic | BindingFlags.Static, null, new[] {typeof(string)}, null);
 
@@ -330,6 +356,141 @@ public class VulkanMetainfoTests
         {
             //deleting the temp file
             if (File.Exists(temp_json_path)) File.Delete(temp_json_path);
+        }
+    }
+}
+
+public class OsInfoTests
+{
+    [Fact, Trait("Order", "7")]
+    public void CheckOs_IntegrationTest()
+    {
+        //relocating a console output
+        using var sw = new System.IO.StringWriter();
+        var _originalOutput = Console.Out;
+        Console.SetOut(sw);
+
+        //Using reflection to get the private method 
+        MethodInfo method = typeof(Program).GetMethod("CheckOs",
+        BindingFlags.NonPublic | BindingFlags.Static);
+
+        //saving the output
+        var osVersion = (Version)method.Invoke(null, null);
+        string output = sw.ToString();
+
+        //matching
+        Assert.NotNull(osVersion);
+        Assert.True(osVersion.Major >= 10);
+
+        Assert.Contains("CPU:", output);
+        Assert.Contains("OS:", output);
+
+        Assert.Contains("System Vulkan loader version:", output);
+
+        //returning output to normal mode
+        Console.SetOut(_originalOutput);
+    }
+
+    [Theory]
+    //old versions
+    [InlineData("5.1.2600", OsSupportStatus.Deprecated, "XP")]
+    [InlineData("6.1.7601", OsSupportStatus.Deprecated, "7")]
+    [InlineData("6.3.9600", OsSupportStatus.Deprecated, "8.1")]
+
+    //Windows 10
+    [InlineData("10.0.10240", OsSupportStatus.Deprecated, "10 1507")]
+    [InlineData("10.0.19045", OsSupportStatus.Deprecated, "10 22H2")]
+
+    //Windows 11 
+    [InlineData("10.0.22631", OsSupportStatus.Deprecated, "11 23H2")]
+    [InlineData("10.0.26100", OsSupportStatus.Supported, "11 24H2")]
+    [InlineData("10.0.26300", OsSupportStatus.Prerelease, "11 25H2 Dev Build 26300")]
+
+    //unknown systems
+    [InlineData("11.0.0", OsSupportStatus.Unknown, null)]
+    public void GetWindowsInfo_Test(string str_version, OsSupportStatus expected_status, string expected_name)
+    {
+        //convert version into correct type
+        Version version = new Version(str_version);
+
+        //using reflection to get private method
+        MethodInfo method = typeof(Program).GetMethod("GetWindowsInfo",
+        BindingFlags.NonPublic | BindingFlags.Static, null, new[]{typeof(Version)}, null);
+
+        //getting a result
+        var result = ((OsSupportStatus status, string name))method.Invoke(null, new object[] {version});
+
+        //matching
+        Assert.Equal(result.status, expected_status);
+        if (expected_name == null)
+            Assert.Null(result.name);
+        else
+            Assert.Equal(result.name, expected_name);
+    }
+
+    [Fact, Trait("Order", "8")]
+    public void HasPerformanceModeProfile_EnsureProfileExists_IntegrationTest()
+    {
+        //using reflection to get a private method
+        MethodInfo method = typeof(Program).GetMethod("HasPerformanceModeProfile",
+        BindingFlags.NonPublic | BindingFlags.Static);
+
+        //getting a path that will be used as a key in the register
+        var imagePath = System.Reflection.Assembly.GetEntryAssembly()?.Location;
+        if (imagePath == null) return;
+
+        //doing two runs to be sure that the value is true
+        bool first_run = (bool)method.Invoke(null, null);
+        bool second_run = (bool)method.Invoke(null, null);
+
+        //matching
+        Assert.True(second_run);
+
+        //cleanup
+        if(imagePath != null)
+        {
+            using var userGpuPrefs = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                @"Software\Microsoft\DirectX\UserGpuPreferences", true);
+            userGpuPrefs?.DeleteValue(imagePath, false);
+        }
+    }
+
+    [Fact, Trait("Order", "9")]
+    public void HasPerformanceModeProfile_FixIncorrectValue_IntegrationTest()
+    {
+        //getting a path that will be used as a key in the register
+        var imagePath = System.Reflection.Assembly.GetEntryAssembly()?.Location;
+        if (imagePath == null) return;
+
+        var registryPath = @"Software\Microsoft\DirectX\UserGpuPreferences";
+        
+        //creating incorrect value in the register
+        using (var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(registryPath, true))
+        {
+            key.SetValue(imagePath, "GpuPreference=1;");
+        }
+
+        //using reflection to get a private method
+        var method = typeof(Program).GetMethod("HasPerformanceModeProfile", 
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        //first call must detect incorrect value and return false
+        bool wasCorrectBeforeFix = (bool)method.Invoke(null, null);
+
+        //match
+        Assert.False(wasCorrectBeforeFix);
+
+        //checking if the value was changed
+        using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(registryPath))
+        {
+            var actualValue = key?.GetValue(imagePath) as string;
+            Assert.Equal("GpuPreference=2;", actualValue);
+        }
+
+        //cleanup
+        using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(registryPath, true))
+        {
+            key?.DeleteValue(imagePath, false);
         }
     }
 }
