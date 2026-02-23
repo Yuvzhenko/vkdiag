@@ -16,7 +16,7 @@ namespace VkDiag;
 
 internal static partial class Program
 {
-    private const string VkDiagVersion = "1.3.13";
+    private static readonly string VkDiagVersion = "1.3.13";
 
     private static bool isAdmin;
     private static bool autofix;
@@ -32,6 +32,8 @@ internal static partial class Program
     private static bool disabledConflictingLayers = true;
     private static bool removedExplicitDriverReg = true;
     private static bool fixedEverything = true;
+    public static Action<ProcessStartInfo> ProcessStarter = psi => Process.Start(psi);
+    public static Action<int> Exiter = code => Environment.Exit(code);
 
     public static async Task Main(string[] args)
     {
@@ -188,8 +190,10 @@ internal static partial class Program
             FileName = cmd,
             Arguments = args,
         };
-        Process.Start(psi);
-        Environment.Exit(0);
+        //Process.Start(psi);
+        //Environment.Exit(0);
+        ProcessStarter(psi);
+        Exiter(0);
     }
 
     private static void ShowMenu()

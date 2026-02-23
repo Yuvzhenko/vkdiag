@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using Xunit.Sdk;
 using Xunit.Abstractions;
+using System.Diagnostics;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 [assembly: TestCaseOrderer("vkdiag.Test.PriorityOrderer", "vkdiag.Test")]
@@ -31,8 +32,23 @@ public class PriorityOrderer : ITestCaseOrderer
     }
 }
 
+public class ResetFlags
+{
+    protected void ResetGlobalFlags()
+    {
+        string[] flags = { "ignoreHighPerfCheck", "autofix", "clear", "disableLayers" };
+        foreach(var name in flags)
+        {
+            var field = typeof(Program).GetField(name,
+             BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+            field?.SetValue(null, false);
+        }
+        Program.everythingIsFine = true;
+    }
+}
 
-public class SnakeCasePolicyTests
+[Collection("Console Tests")]
+public class SnakeCasePolicyTests : ResetFlags
 {
     [Theory]
     [InlineData("LibraryPath", "library_path")]
@@ -40,6 +56,7 @@ public class SnakeCasePolicyTests
     [InlineData("ApiVersion", "api_version")]
     public void ConvertNameTest(string input, string expected)
     {
+        ResetGlobalFlags();
         //Set up the environment and objects needed for the test
         var policy = new SnakeCasePolicy();
         // Perform the actual action we want to test
@@ -49,11 +66,13 @@ public class SnakeCasePolicyTests
     }
 }
 
-public class AppxPackagesTests
+[Collection("Console Tests")]
+public class AppxPackagesTests : ResetFlags
 {
     [Fact]
     public void PackageIsFound()
     {
+        ResetGlobalFlags();
         //Redirect Console.Out to capture the text written by WriteLogLine
         using var sw = new System.IO.StringWriter();
         var _originalOutput = Console.Out;
@@ -64,7 +83,7 @@ public class AppxPackagesTests
         var serviceWithPackage = new FakePackageService(packagesFound);
         Program.everythingIsFine = true;
 
-        //using reflection to get private mathod
+        //using reflection to get a private mathod
         MethodInfo method = typeof(Program).GetMethod("CheckAppxPackages",
         BindingFlags.NonPublic | BindingFlags.Static, null,
         new[] {typeof(IPackageService)}, null);
@@ -81,6 +100,7 @@ public class AppxPackagesTests
     [Fact]
     public void NoPackagesFound()
     {
+        ResetGlobalFlags();
         // Arrange: Simulate that NO packages were found (empty list)
         var noPackages = new List<string>(); 
         var emptyService = new FakePackageService(noPackages);
@@ -100,12 +120,13 @@ public class AppxPackagesTests
 }
 
 [Collection("Console Tests")]
-public class LoggingMethodTests
+public class LoggingMethodTests : ResetFlags
 {
 
     [Fact, Trait("Order", "1")]
     public void FormatText_Test()
     {
+        ResetGlobalFlags();
         //Redirect Console.Out to capture the text written by WriteLogLine
         using var sw = new System.IO.StringWriter();
         var _originalOutput = Console.Out;
@@ -129,6 +150,7 @@ public class LoggingMethodTests
     [Fact, Trait("Order", "2")]
     public void PreserveLeadingSpaces_Test()
     {
+        ResetGlobalFlags();
         //Redirect Console.Out to capture the text written by WriteLogLine
         using var sw = new System.IO.StringWriter();
         var _originalOutput = Console.Out;
@@ -152,6 +174,7 @@ public class LoggingMethodTests
     [Fact, Trait("Order", "3")]
     public void EmptyOverload_Test()
     {
+        ResetGlobalFlags();
         //Redirect Console.Out to capture the text written by WriteLogLine
         using var sw = new System.IO.StringWriter();
         var _originalOutput = Console.Out;
@@ -170,11 +193,13 @@ public class LoggingMethodTests
     }
 }
 
-public class GpuDriverInfoTests
+[Collection("Console Tests")]
+public class GpuDriverInfoTests : ResetFlags
 {
     [Fact]
     public void FindVulkan_IntegrationTest()
     {
+        ResetGlobalFlags();
         //setting the global status to true
         Program.everythingIsFine = true;
 
@@ -194,6 +219,7 @@ public class GpuDriverInfoTests
     [Fact]
     public void Exception_Throwing_IntegrationTest()
     {
+        ResetGlobalFlags();
         using var sw = new System.IO.StringWriter();
         var _originalOutput = Console.Out;
         Console.SetOut(sw);
@@ -215,6 +241,7 @@ public class GpuDriverInfoTests
     [Fact, Trait("Order", "4")]
     public void HardwareLog_IntegrationTest()
     {
+        ResetGlobalFlags();
         //relocating a console output
         using var sw = new System.IO.StringWriter();
         var _originalOutput = Console.Out;
@@ -237,6 +264,7 @@ public class GpuDriverInfoTests
     [Fact, Trait("Order", "5")]
     public void ShowUpdateWarning_IntegrationTest()
     {
+        ResetGlobalFlags();
         //relocating a console output
         using var sw = new System.IO.StringWriter();
         var originalOut = Console.Out;
@@ -258,11 +286,13 @@ public class GpuDriverInfoTests
 
 }
 
-public class VulkanMetainfoTests
+[Collection("Console Tests")]
+public class VulkanMetainfoTests : ResetFlags
 {
     [Fact, Trait("Order", "6")]
     public void CheckVulkanMeta_CorrectOutput_IntegrationTest()
     {
+        ResetGlobalFlags();
         //relocating a console output
         using var sw = new System.IO.StringWriter();
         var _originalOutput = Console.Out;
@@ -287,6 +317,10 @@ public class VulkanMetainfoTests
     [Fact]
     public void CheckVulkanMeta_ExceptionThrowing_Test()
     {
+        ResetGlobalFlags();
+        using var sw = new System.IO.StringWriter();
+        var _originalOutput = Console.Out;
+        Console.SetOut(sw);
         //Using reflection to get the private method
         MethodInfo method = typeof(Program).GetMethod("CheckVulkanMeta",
         BindingFlags.NonPublic | BindingFlags.Static, null, Type.EmptyTypes, null);
@@ -295,6 +329,7 @@ public class VulkanMetainfoTests
         var exception = Record.Exception(() => method.Invoke(null, null));
 
         Assert.Null(exception);
+        Console.SetOut(_originalOutput);
     }
 
     [Theory]
@@ -324,6 +359,7 @@ public class VulkanMetainfoTests
     }", "The Test", "0.0.114" )]
     public void GetLayerInfo_ParseJSON_Test(string json_content, string expected_title, string version)
     {
+        ResetGlobalFlags();
         //converting versiong into the right type
         Version expected_apiVer = new Version(version);
 
@@ -360,11 +396,13 @@ public class VulkanMetainfoTests
     }
 }
 
-public class OsInfoTests
+[Collection("Console Tests")]
+public class OsInfoTests : ResetFlags
 {
     [Fact, Trait("Order", "7")]
     public void CheckOs_IntegrationTest()
     {
+        ResetGlobalFlags();
         //relocating a console output
         using var sw = new System.IO.StringWriter();
         var _originalOutput = Console.Out;
@@ -410,6 +448,7 @@ public class OsInfoTests
     [InlineData("11.0.0", OsSupportStatus.Unknown, null)]
     public void GetWindowsInfo_Test(string str_version, OsSupportStatus expected_status, string expected_name)
     {
+        ResetGlobalFlags();
         //convert version into correct type
         Version version = new Version(str_version);
 
@@ -431,6 +470,7 @@ public class OsInfoTests
     [Fact, Trait("Order", "8")]
     public void HasPerformanceModeProfile_EnsureProfileExists_IntegrationTest()
     {
+        ResetGlobalFlags();
         //using reflection to get a private method
         MethodInfo method = typeof(Program).GetMethod("HasPerformanceModeProfile",
         BindingFlags.NonPublic | BindingFlags.Static);
@@ -458,6 +498,7 @@ public class OsInfoTests
     [Fact, Trait("Order", "9")]
     public void HasPerformanceModeProfile_FixIncorrectValue_IntegrationTest()
     {
+        ResetGlobalFlags();
         //getting a path that will be used as a key in the register
         var imagePath = System.Reflection.Assembly.GetEntryAssembly()?.Location;
         if (imagePath == null) return;
@@ -492,5 +533,157 @@ public class OsInfoTests
         {
             key?.DeleteValue(imagePath, false);
         }
+    }
+}
+
+[Collection("Console Tests")]
+public class MainTests : ResetFlags
+{
+    [Theory]
+    [Trait("Order", "10")]
+    [InlineData("1.3.13", "VkDiag version: 1.3.13")]
+    [InlineData("0.0.1", "Newer version available")]
+    [InlineData("99.9.9", "VkDiag version: 99.9.9")]
+    [InlineData("1.0.0-debug", "Newer version available")]
+    public async Task CheckVkDiagVersion_Test(string version, string expected_log)
+    {
+        ResetGlobalFlags();
+        //relocating a console output
+        using var sw = new System.IO.StringWriter();
+        var _originalOutput = Console.Out;
+        Console.SetOut(sw);
+
+        //getting fields from the private methods
+        var version_field = typeof(Program).GetField("VkDiagVersion",
+        BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+        var method = typeof(Program).GetMethod("CheckVkDiagVersionAsync",
+        BindingFlags.NonPublic | BindingFlags.Static);
+
+        //saving the value of the original version
+        string originalVersion = (string)version_field.GetValue(null);
+
+        try
+        {
+            //changing the actual version and calling the method
+            version_field.SetValue(null, version);
+
+            var task = (Task)method.Invoke(null, null);
+            await task;
+
+            string output = sw.ToString();
+
+            //matching the output
+            Assert.Contains(expected_log, output);
+        }
+        finally
+        {
+            //setting back the version and console output
+            version_field.SetValue(null, originalVersion);
+            Console.SetOut(_originalOutput);
+        }
+    }
+
+    [Theory]
+    [Trait("Order", "11")]
+    [InlineData(new string[] { "-f" }, "autofix")]
+    [InlineData(new string[] { "--ignore-high-performance-check", "-c" }, "ignoreHighPerfCheck", "clear")]
+    [InlineData(new string[] { "-d", "--fix" }, "disableLayers", "autofix")]
+    public void GetOptions_CorrectFlags_Test(string[] args, params string[] expected_flags)
+    {
+        //setting all the flags to false before the test
+        ResetGlobalFlags();
+
+        //using reflection to get a private method
+        MethodInfo method = typeof(Program).GetMethod("GetOptions",
+        BindingFlags.NonPublic | BindingFlags.Static, null, new[] {typeof(string[])}, null);
+
+        method.Invoke(null, new object[]{args});
+
+        //checking all the flags through reflection
+        foreach(var flag_name in expected_flags)
+        {
+            var field = typeof(Program).GetField(flag_name,
+            BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+
+            bool value = (bool)field.GetValue(null);
+
+            Assert.True(value);
+        }
+    }
+
+    [Fact, Trait("Order", "12")]    
+    public void CheckPermissions_Test()
+    {
+        ResetGlobalFlags();
+        //using reflection to get a private method and it`s fields
+        MethodInfo method = typeof(Program).GetMethod("CheckPermissions",
+        BindingFlags.NonPublic | BindingFlags.Static);
+        var field = typeof(Program).GetField("isAdmin",
+        BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+
+        method.Invoke(null, null);
+        var result = field.GetValue(null);
+
+        //checking if the field is initialized
+        Assert.NotNull(result);
+        Assert.IsType<bool>(result);
+    }
+
+    [Theory]
+    [Trait("Order", "13")]
+    [InlineData(false, true, true, false, "runas", "-f -c")]
+    [InlineData(false, false, false, true, "runas", "-d")]
+    [InlineData(true, true, false, false, "open", "")]
+    public void Restart_ProcessInfo_Test(bool fakeIsAdmin, bool fakeAutofix, bool fakeClear, bool fakeDisable, 
+                                         string expectedVerb, string expectedArgs)
+    {
+        ResetGlobalFlags();
+        //relocating a console output
+        using var sw = new System.IO.StringWriter();
+        var _originalOutput = Console.Out;
+        Console.SetOut(sw);
+
+        //getting fields from the private methods
+        var admin = typeof(Program).GetField("isAdmin",
+        BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+        var fix = typeof(Program).GetField("autofix",
+        BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+        var clear = typeof(Program).GetField("clear",
+        BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+        var layers = typeof(Program).GetField("disableLayers",
+        BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+
+        //changing the value of the fields
+        admin.SetValue(null, fakeIsAdmin);
+        fix.SetValue(null, fakeAutofix);
+        clear.SetValue(null, fakeClear);
+        layers.SetValue(null, fakeDisable);
+
+        //instead of actually running methods just saving the data in variables
+        ProcessStartInfo capturedPsi = null;
+        bool exitCalled = false;
+        Program.ProcessStarter = psi => capturedPsi = psi;
+        Program.Exiter = code => exitCalled = true;
+
+        //using reflection to get a private method
+        MethodInfo method = typeof(Program).GetMethod("Restart",
+        BindingFlags.NonPublic | BindingFlags.Static, null, new[] {typeof(bool), typeof(bool)}, null);
+
+        method.Invoke(null, new object[]{true, true});
+
+        //matching
+        if (fakeIsAdmin)
+        {
+            Assert.Null(capturedPsi);
+            Assert.False(exitCalled);
+        }
+        else
+        {
+            Assert.NotNull(capturedPsi);
+            Assert.Equal(expectedVerb, capturedPsi.Verb);
+            Assert.Equal(expectedArgs.Trim(), capturedPsi.Arguments.Trim());
+            Assert.True(exitCalled);
+        }
+        Console.SetOut(_originalOutput);
     }
 }
