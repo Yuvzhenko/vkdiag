@@ -27,19 +27,19 @@ internal static partial class Program
             foreach (var cpuInfo in collection)
             {
                 var cpuName = cpuInfo.GetPropertyValue("Name") as string;
-                WriteLogLine(ConsoleColor.Cyan, "i", "CPU: " + cpuName);
+                LogInfo("CPU: " + cpuName);
             }
         }
 #if DEBUG
         catch (Exception e)
         {
-            WriteLogLine(ConsoleColor.DarkYellow, "x", "Failed to get CPU information");
-            WriteLogLine(ConsoleColor.Red, "x", e.ToString());
+            LogWarning("Failed to get CPU information");
+            LogError(e.ToString());
         }
 #else
             catch
             {
-                WriteLogLine(ConsoleColor.DarkYellow, "x", "Failed to get CPU information");
+                LogWarning("Failed to get CPU information");
             }
 #endif
         try
@@ -93,13 +93,13 @@ internal static partial class Program
 #if DEBUG
         catch (Exception e)
         {
-            WriteLogLine(ConsoleColor.DarkYellow, "x", "Failed to get OS information");
-            WriteLogLine(ConsoleColor.Red, "x", e.ToString());
+            LogWarning("Failed to get OS information");
+            LogError(e.ToString());
         }
 #else
             catch
             {
-                WriteLogLine(ConsoleColor.DarkYellow, "x", "Failed to get OS information");
+                LogWarning("Failed to get OS information");
             }
 #endif      
         try
@@ -108,7 +108,7 @@ internal static partial class Program
             if (vulkanLoaderLibs.Length == 0)
             {
                 everythingIsFine = false;
-                WriteLogLine(ConsoleColor.Red, "x", "No Vulkan Loader library was found; please reinstall latest GPU drivers");
+                LogError("No Vulkan Loader library was found; please reinstall latest GPU drivers");
             }
             else
             {
@@ -136,7 +136,7 @@ internal static partial class Program
         }
         catch
         {
-            WriteLogLine(ConsoleColor.DarkYellow, "x", "Failed to get system Vulkan loader info");
+            LogWarning("Failed to get system Vulkan loader info");
         }
         return osVer;
     }
@@ -214,7 +214,7 @@ internal static partial class Program
         if (Assembly.GetEntryAssembly()?.Location is not { } imagePath)
             return false;
         
-        var basePath = @"Software\Microsoft\DirectX\UserGpuPreferences";
+        var basePath = Constants.UserGpuPreferencesPath;
         using var userGpuPrefs = Registry.CurrentUser.OpenSubKey(basePath, true);
         if (userGpuPrefs is null)
             return true;

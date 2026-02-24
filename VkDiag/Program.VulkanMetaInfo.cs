@@ -11,38 +11,11 @@ namespace VkDiag;
 
 internal static partial class Program
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = new SnakeCasePolicy(),
-        WriteIndented = true,
-    };
-
-    // ReSharper disable StringLiteralTypo
-    private static readonly Dictionary<string, Version> KnownProblematicLayers = new()
-    {
-        ["MirillisActionVulkanLayer.json"] = null,
-        ["ow-vulkan-overlay64.json"] = null,
-        ["ow-graphics-vulkan64.json"] = null,
-        ["fpsmonvk64.json"] = null,
-        ["fpsmonvk32.json"] = null,
-        ["hudsightvk64.json"] = null,
-        ["hudsightvk32.json"] = null,
-        ["playclawvk64.json"] = null,
-        ["playclawvk32.json"] = null,
-        ["VK_LAYER_FCAT_DT_overlay_JSON_x64.json"] = null,
-        ["VK_LAYER_FCAT_DT_overlay_JSON_x86.json"] = null,
-        ["bdcamvk64.json"] = new(1, 1, 0, 111),
-        ["bdcamvk32.json"] = new(1, 1, 0, 111),
-        ["obs-vulkan64.json"] = new(1, 2, 2, 0),
-        ["obs-vulkan32.json"] = new(1, 2, 2, 0),
-    };
-    // ReSharper restore StringLiteralTypo
-        
     private static void CheckVulkanMeta()
     {
         WriteLogLine();
         WriteLogLine("Vulkan registration information:");
-        var basePaths = new[] {@"SOFTWARE\Khronos\Vulkan", @"SOFTWARE\WOW6432Node\Khronos\Vulkan"};
+        var basePaths = new[] { Constants.VulkanRegistryPath, Constants.VulkanRegistryPathWow64 };
         var broken = false;
         var removedBroken = true;
         clear &= hasProperVulkanDrivers;
@@ -69,7 +42,7 @@ internal static partial class Program
                         {
                             removedExplicitDriverReg = false;
 #if DEBUG
-                                WriteLogLine(ConsoleColor.Red, "x", $"Failed to fix {driversKey} @{driverPath}");
+                                LogError($"Failed to fix {driversKey} @{driverPath}");
 #endif
                         }
                     }
@@ -88,7 +61,7 @@ internal static partial class Program
                         {
                             fixedEverything = removedBroken = false;
 #if DEBUG
-                                WriteLogLine(ConsoleColor.Red, "x", $"Failed to fix {driversKey} @{driverPath}");
+                                LogError($"Failed to fix {driversKey} @{driverPath}");
 #endif
                         }
                     }
@@ -100,26 +73,26 @@ internal static partial class Program
 
         if ((!hasExplicitDriverReg || removedExplicitDriverReg)
             && (!broken || removedBroken))
-            WriteLogLine(ConsoleColor.Green, "+", "No explicit driver registration entries");
+            LogSuccess("No explicit driver registration entries");
         else
-            WriteLogLine(ConsoleColor.DarkYellow, "!", "Explicit driver registration issues");
+            LogWarning("Explicit driver registration issues");
         if (hasExplicitDriverReg)
         {
             if (removedExplicitDriverReg)
-                WriteLogLine(ConsoleColor.Green, "+", "    Removed explicit driver registration");
+                LogSuccess("    Removed explicit driver registration");
             else
             {
-                WriteLogLine(ConsoleColor.DarkYellow, "!", "    Explicit driver registration present (legacy)");
+                LogWarning("    Explicit driver registration present (legacy)");
                 if (!hasProperVulkanDrivers)
-                    WriteLogLine(ConsoleColor.DarkYellow, "!", "    Please update your GPU drivers");
+                    LogWarning("    Please update your GPU drivers");
             }
         }
         if (broken)
         {
             if (removedBroken)
-                WriteLogLine(ConsoleColor.Green, "+", "    Removed broken explicit Vulkan driver registration entries");
+                LogSuccess("    Removed broken explicit Vulkan driver registration entries");
             else
-                WriteLogLine(ConsoleColor.DarkYellow, "!", "    There are broken explicit Vulkan driver registration entries");
+                LogWarning("    There are broken explicit Vulkan driver registration entries");
         }
 
         var layersList = new List<string> {"Implicit", "Explicit"};
@@ -155,7 +128,7 @@ internal static partial class Program
                             {
                                 layerKey.SetValue(path, 1);
 #if DEBUG
-                                WriteLogLine(ConsoleColor.Green, "+", $"Disabled @{layerPath}");
+                                LogSuccess($"Disabled @{layerPath}");
 #endif
                                 return true;
                             }
@@ -163,14 +136,14 @@ internal static partial class Program
                             {
                                 disabledConflictingLayers = disabledConflicts = false;
 #if DEBUG
-                                WriteLogLine(ConsoleColor.Red, "x", $"Failed to fix {layerKey} @{layerPath}");
+                                LogError($"Failed to fix {layerKey} @{layerPath}");
 #endif
                             }
                         }
                         else
                         {
 #if DEBUG
-                            WriteLogLine(ConsoleColor.DarkYellow, "-", $"Autofix is disabled");
+                            LogWarning($"Autofix is disabled");
 #endif
                             disabledConflictingLayers = disabledConflicts = false;
                         }
@@ -192,7 +165,7 @@ internal static partial class Program
                             {
                                 fixedEverything = removedBroken = false;
 #if DEBUG
-                                WriteLogLine(ConsoleColor.Red, "x", $"Failed to fix {layerKey} @{layerPath}");
+                                LogError($"Failed to fix {layerKey} @{layerPath}");
 #endif
                             }
                         }
@@ -203,7 +176,7 @@ internal static partial class Program
                     {
                         var layerJsonName = Path.GetFileName(layerPath);
                         var layerInfo = GetLayerInfo(layerPath)[0];
-                        if (KnownProblematicLayers.TryGetValue(layerJsonName, out var minLayerVersion)
+                        if (Constants.KnownProblematicLayers.TryGetValue(layerJsonName, out var minLayerVersion)
                             && (layerInfo.dllVer == null || minLayerVersion == null || layerInfo.dllVer < minLayerVersion))
                         {
                             isEnabled = !DisableLayer(layerPath);
@@ -224,7 +197,7 @@ internal static partial class Program
                             if (idx >= 0)
                             {
 #if DEBUG
-                                WriteLogLine(ConsoleColor.Cyan, "i", $"    Found duplicate layer {layerJsonName}");
+                                LogInfo($"    Found duplicate layer {layerJsonName}");
 #endif
                                 var dupLayer = layerInfoList[idx];
                                 var dupLayerInfo = GetLayerInfo(dupLayer.path)[0];
@@ -240,7 +213,7 @@ internal static partial class Program
                                 if (curIsNewer)
                                 {
 #if DEBUG
-                                    WriteLogLine(ConsoleColor.Cyan, "i", $"    Disabling older layer {layerJsonName}, v{dupLayerInfo.dllVer}, api v{dupLayerInfo.apiVer}");
+                                    LogInfo($"    Disabling older layer {layerJsonName}, v{dupLayerInfo.dllVer}, api v{dupLayerInfo.apiVer}");
 #endif
                                     if (DisableLayer(dupLayer.path))
                                         layerInfoList[idx] = (dupLayer.path, false, true, true);
@@ -248,7 +221,7 @@ internal static partial class Program
                                 else
                                 {
 #if DEBUG
-                                    WriteLogLine(ConsoleColor.Cyan, "i", $"    Disabling current layer {layerJsonName}, v{dupLayerInfo.dllVer}, api v{dupLayerInfo.apiVer}");
+                                    LogInfo($"    Disabling current layer {layerJsonName}, v{dupLayerInfo.dllVer}, api v{dupLayerInfo.apiVer}");
 #endif
                                     isEnabled = !DisableLayer(layerPath);
                                     isConflicting = true;
@@ -266,14 +239,14 @@ internal static partial class Program
                 if (broken && !removedBroken)
                 {
                     if (layer == "Implicit")
-                        WriteLogLine(ConsoleColor.Red, "x", msg);
+                        LogError(msg);
                     else
-                        WriteLogLine(ConsoleColor.DarkYellow, "!", msg);
+                        LogWarning(msg);
                 }
                 else if (conflicts && !disabledConflicts)
-                    WriteLogLine(ConsoleColor.DarkYellow, "!", msg);
+                    LogWarning(msg);
                 else
-                    WriteLogLine(ConsoleColor.Green, "+", msg);
+                    LogSuccess(msg);
                 foreach (var (layerPath, isBroken, isEnabled, isConflicting) in layerInfoList)
                 {
                     var layerInfo = GetLayerInfo(layerPath)[0];
@@ -300,11 +273,11 @@ internal static partial class Program
                     name = "    " + name;
                     WriteLogLine(color, status, name);
                     if (isConflicting && isEnabled)
-                        WriteLogLine(ConsoleColor.Cyan, "i", "        Please update the associated software or disable this layer");
+                        LogInfo("        Please update the associated software or disable this layer");
                 }
             }
             else
-                WriteLogLine(ConsoleColor.Green, "+", $"No {(is32 ? "32" : "64")}-bit {layer.ToLower()} layers registered in {rootKey.Name}");
+                LogSuccess($"No {(is32 ? "32" : "64")}-bit {layer.ToLower()} layers registered in {rootKey.Name}");
         }
     }
 
@@ -323,7 +296,7 @@ internal static partial class Program
             if (string.IsNullOrEmpty(layerContent))
                 return defaultResult;
                 
-            var regInfo = JsonSerializer.Deserialize<VkRegInfo>(layerContent, JsonOptions);
+            var regInfo = JsonSerializer.Deserialize<VkRegInfo>(layerContent, Constants.JsonOptions);
             var layers = regInfo?.Layers ?? [];
             if (regInfo?.Layer != null)
                 layers.Add(regInfo.Layer);
@@ -362,7 +335,7 @@ internal static partial class Program
 #endif
         {
 #if DEBUG
-            WriteLogLine(ConsoleColor.Red, "x", e.ToString());
+            LogError(e.ToString());
 #endif
             return [(layerFilename, libDllVer, apiVer)];
         }

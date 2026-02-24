@@ -5,18 +5,11 @@ using VkDiag.Interop;
 namespace VkDiag;
 
 internal static partial class Program
-{
-    // ReSharper disable StringLiteralTypo
-    private static readonly List<(string id, string title)> KnownPackages =
-    [
-        ("Microsoft.D3DMappingLayers_8wekyb3d8bbwe", "OpenCL, OpenGL, and Vulkan Compatibility Pack"),
-    ];
-    // ReSharper restore StringLiteralTypo
-    
+{ 
     private static void CheckAppxPackages(IPackageService packageService)
     {
         var found = new List<(string name, string version)>();
-        foreach (var pkg in KnownPackages)
+        foreach (var pkg in Constants.KnownPackages)
         {
             try
             {
@@ -35,15 +28,15 @@ internal static partial class Program
         {
             everythingIsFine = false;
             WriteLogLine();
-            WriteLogLine(ConsoleColor.DarkYellow, "!", "Potentially incompatible software:");
+            LogWarning("Potentially incompatible software:");
             foreach (var pkg in found)
-                WriteLogLine(ConsoleColor.DarkYellow, "!", $"    {pkg.name}{pkg.version}");
+                LogWarning($"    {pkg.name}{pkg.version}");
         }
     }
     public class WindowsPackageService : IPackageService
-{
-    public IEnumerable<string> FindPackages(string id) => PackageManager.FindPackagesByPackageFamily(id);
-    public string GetVersion(string name) => PackageManager.GetPackageVersion(name, "");
-    public string GetName(string name, string title) => PackageManager.GetAppStoreName(name, title);
-}
+    {
+        public IEnumerable<string> FindPackages(string id) => PackageManager.FindPackagesByPackageFamily(id);
+        public string GetVersion(string name) => PackageManager.GetPackageVersion(name, "");
+        public string GetName(string name, string title) => PackageManager.GetAppStoreName(name, title);
+    }
 }

@@ -10,21 +10,6 @@ namespace VkDiag;
 
 internal static partial class Program
 {
-    // ReSharper disable StringLiteralTypo
-    private static readonly HashSet<string> ServiceBlockList =
-    [
-        "BasicDisplay",
-        "WUDFRd",
-        "HyperVideo",
-        "MS Idd Device",
-        "IndirectKmd",
-        "spacedesk Graphics Adapter",
-
-        "LuminonCore IDDCX Adapter",
-        "Parsec Virtual Display Adapter"
-    ];
-    // ReSharper restore StringLiteralTypo
-
     private static (bool hasInactive, bool hasVulkan) CheckGpuDrivers()
     {
         var gpuGuidList = new HashSet<string>();
@@ -41,7 +26,7 @@ internal static partial class Program
         {
             if (videoKey == null)
             {
-                WriteLogLine(ConsoleColor.Red, "Failed to enumerate GPU drivers");
+                LogError("Failed to enumerate GPU drivers");
                 return (false, false);
             }
 
@@ -61,7 +46,7 @@ internal static partial class Program
                 {
                     using var videoSubKey = gpuKey.OpenSubKey("Video");
                     if ((videoSubKey?.GetValueNames().Contains("Service") ?? false)
-                        && !ServiceBlockList.Contains(videoSubKey.GetValue("Service")))
+                        && !Constants.ServiceBlockList.Contains(videoSubKey.GetValue("Service")))
                     {
                         inactiveGpuGuidList.Add(gpuGuid);
                     }
@@ -74,7 +59,7 @@ internal static partial class Program
                 using var gpuKey = videoKey.OpenSubKey(gpuGuid);
                 if (gpuKey == null)
                 {
-                    WriteLogLine(ConsoleColor.Red, "x", $"Failed to read driver info for GPU {gpuGuid}");
+                    LogError($"Failed to read driver info for GPU {gpuGuid}");
                     continue;
                 }
                 var name = "";
@@ -159,7 +144,7 @@ internal static partial class Program
                                 {
                                     fixedEverything = removedBroken = false;
 #if DEBUG
-                                    WriteLogLine(ConsoleColor.Red, "x", $"Failed to fix {outputKey} @{entry}");
+                                    LogError($"Failed to fix {outputKey} @{entry}");
 #endif
                                 }
                             }
@@ -188,7 +173,7 @@ internal static partial class Program
                     WriteLogLine(color, status, name);
                     // per-gpu checks
                     if (brokenDriverRegistration)
-                        WriteLogLine(ConsoleColor.Red, "x", "    Broken driver registration (?)");
+                        LogError("    Broken driver registration (?)");
                     if (!string.IsNullOrEmpty(driverVer))
                     {
                         if (!string.IsNullOrEmpty(driverDate))
@@ -211,22 +196,22 @@ internal static partial class Program
                         if (hasDate)
                         {
                             if (driverDateTime < DateTime.UtcNow.AddMonths(-2))
-                                WriteLogLine(ConsoleColor.DarkYellow, "!", "    Please consider updating your video driver");
+                                LogWarning("    Please consider updating your video driver");
                             else if (driverDateTime < DateTime.UtcNow.AddMonths(-6))
                             {
                                 everythingIsFine = false;
-                                WriteLogLine(ConsoleColor.Red, "x", "    Please update your video driver");
+                                LogError("    Please update your video driver");
                             }
                         }
                     }
                     if (vkReg)
-                        WriteLogLine(ConsoleColor.Green, "v", "    Proper Vulkan driver registration");
+                        LogSuccess("    Proper Vulkan driver registration");
                     if (broken)
                     {
                         if (removedBroken)
-                            WriteLogLine(ConsoleColor.Green, "+", "    Removed broken Vulkan registration entries");
+                            LogSuccess("    Removed broken Vulkan registration entries");
                         else
-                            WriteLogLine(ConsoleColor.DarkYellow, "!", "    Has broken Vulkan registration entries");
+                            LogWarning("    Has broken Vulkan registration entries");
                     }
                 }
             }

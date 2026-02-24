@@ -43,4 +43,16 @@ internal static partial class Program
     {
         lock (TheDoor) Console.WriteLine('\u200b'); // zero width space to workaround bug with emitted \r instead of \r\n
     }
+
+    private static void LogError(string message) 
+        => WriteLogLine(ConsoleColor.Red, "x", message);
+
+    private static void LogWarning(string message) 
+        => WriteLogLine(ConsoleColor.DarkYellow, "!", message);
+
+    private static void LogSuccess(string message) 
+        => WriteLogLine(ConsoleColor.Green, "+", message);
+
+    private static void LogInfo(string message) 
+        => WriteLogLine(ConsoleColor.Cyan, "i", message);
 }
