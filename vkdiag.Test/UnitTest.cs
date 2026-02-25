@@ -554,7 +554,7 @@ public class MainTests : ResetFlags
         Console.SetOut(sw);
 
         //getting fields from the private methods
-        var version_field = typeof(Program).GetField("VkDiagVersion",
+        var version_field = typeof(Constants).GetField("VkDiagVersion",
         BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
         var method = typeof(Program).GetMethod("CheckVkDiagVersionAsync",
         BindingFlags.NonPublic | BindingFlags.Static);

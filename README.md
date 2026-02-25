@@ -1,20 +1,43 @@
-# Latest binary release
-You can download the latest binary release [here](https://github.com/13xforever/vkdiag/releases/latest). You want the `vkdiag.exe` link there.
+Глосарій проєкту VkDiag
 
-# About
-VkDiag is a rudimentary vulkan diagnostics tool for Windows.
+1. Предметна область (Vulkan та Графіка)
+Vulkan API — низькорівневий кросплатформний інтерфейс програмування додатків (API) для 3D-графіки та обчислень. Є основним об'єктом діагностики програми.
 
-This tool was designed to check for common Windows GPU driver issues and common layer compatibility issues with RPCS3 emulator.
+Vulkan Layer (Шар Vulkan) — програмний компонент, який вбудовується між програмою та драйвером Vulkan для перехоплення викликів API. Використовується для налагодження, валідації або оверлеїв (FPS монітори, стрімінг).
 
-It was developed at the time when Windows ICD loader was fairly new and went through a bout of changes, and was fairly hard to diagnose.
+Implicit Layer (Неявний шар) — шар, який завантажується автоматично драйвером, якщо він зареєстрований у системі, без явного запиту від програми. Часто є причиною конфліктів та збоїв.
 
-It checks general system information, GPU driver registration info, and [vulkan driver registration](https://vulkan.lunarg.com/doc/sdk/1.3.250.0/windows/LoaderInterfaceArchitecture.html) (including vulkan layers).
+Explicit Layer (Явний шар) — шар, який завантажується тільки тоді, коли програма явно цього вимагає.
 
-Please note that Linux has separate driver load mechanism, and is not supported by this tool. You may use verification and troubleshooting sections of [Arch Wiki article](https://wiki.archlinux.org/title/Vulkan) instead. 
+Vulkan Loader (Завантажувач) — бібліотека vulkan-1.dll, яка відповідає за пошук драйверів та шарів, а також за маршрутизацію викликів API до відповідного обладнання.
 
-# Building
-Project is targeting legacy .NET Framework 4.8 that should be installed by default on all supported versions of Windows.
+Legacy Driver Registration — застарілий метод реєстрації драйверів Vulkan через явні шляхи у гілці реєстру Drivers, який програма пропонує очистити.
 
-You may need to install [dotnet sdk](https://dotnet.microsoft.com/en-us/download) or [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/) to use with some IDE (VS Code, JetBrains Raider, Visual Studio, etc).
+High Performance Profile — налаштування Windows, яке примушує систему використовувати дискретну відеокарту замість інтегрованої для конкретного додатка.
 
-If you have `dotnet` available in console, you can use `dotnet build` command to build the project.
+2. Системні компоненти (Windows OS)
+Windows Registry (Реєстр Windows) — ієрархічна база даних налаштувань ОС. VkDiag активно зчитує та модифікує ключі в HKLM (Local Machine) та HKCU (Current User) для керування драйверами.
+
+WMI (Windows Management Instrumentation) — інфраструктура управління даними та операціями в ОС Windows. Використовується програмою для отримання точної назви процесора (CIM_Processor) та версії ОС.
+
+Appx Package — формат пакетів додатків Windows (UWP). Програма перевіряє наявність специфічних пакетів (наприклад, "Compatibility Pack"), які можуть емулювати Vulkan поверх DirectX, знижуючи продуктивність.
+
+WoW64 (Windows 32-bit on Windows 64-bit) — підсистема ОС, що дозволяє запускати 32-бітні додатки на 64-бітній Windows. Програма перевіряє окремі гілки реєстру WOW6432Node для 32-бітних шарів.
+
+ServiceBlockList — внутрішній список служб (наприклад, BasicDisplay, Parsec, spacedesk), драйвери яких ігноруються програмою, оскільки вони не є повноцінними графічними адаптерами.
+
+3. Архітектура та Реалізація (Codebase)
+Broken Entry (Битий запис) — запис у реєстрі Windows (шлях до DLL або JSON), який вказує на файл, що фізично відсутній на диску (!File.Exists). Програма позначає такі записи як помилкові.
+
+Conflicting Layer (Конфліктний шар) — шар Vulkan, який знаходиться у внутрішньому "чорному списку" програми (KnownProblematicLayers) через відомі проблеми сумісності (наприклад, старі версії obs-vulkan, bandicam).
+
+Partial Class (Частковий клас) — механізм C#, що дозволяє розділити код одного класу (Program) на кілька файлів (Program.OsInfo.cs, Program.Logging.cs тощо) для кращої структуризації.
+
+SnakeCasePolicy — політика іменування для JSON-серіалізатора, яка перетворює імена властивостей C# (LibraryPath) у формат snake_case (library_path), що використовується у маніфестах Vulkan.
+
+POCO (Plain Old CLR Object) — прості C# класи (наприклад, VkRegInfo, GitHubReleaseInfo), які використовуються виключно для зберігання даних, отриманих після десеріалізації JSON.
+
+4. Режими роботи програми
+Autofix (Автовиправлення) — режим запуску (аргумент -f), у якому програма намагається автоматично видалити биті записи реєстру без додаткового підтвердження.
+
+Elevated Permissions (Права адміністратора) — режим роботи, необхідний для запису змін у системну гілку реєстру (HKLM). Якщо права відсутні, програма ініціює перезапуск через runas.
