@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="uk">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.16.1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>VkDiag: Клас PackageManager</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<script type="text/javascript" src="clipboard.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectalign">
+   <div id="projectname">VkDiag
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Створено системою Doxygen 1.16.1 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+</script>
+<script type="text/javascript">
+$(function() { codefold.init(); });
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Пошук',true);
+  $(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(function(){initNavTree('class_package_manager.html','','class_package_manager-members'); });
+</script>
+<div id="container">
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Завантаження...</div>
+<div class="SRStatus" id="Searching">Пошук...</div>
+<div class="SRStatus" id="NoMatches">Нічого не знайдено</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="headertitle"><div class="title">Клас PackageManager</div></div>
+</div><!--header-->
+<div class="contents">
+
+<p>Статичний клас для низькорівневої взаємодії з Windows Package Manager API.  
+ <a href="#details">Детальніше...</a></p>
+<div class="dynheader">
+Діаграма зв'язків класу PackageManager:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_package_manager__coll__graph.png" border="0" usemap="#a_package_manager_coll__map" loading="lazy" alt="Collaboration graph"/></div>
+<map name="a_package_manager_coll__map" id="a_package_manager_coll__map">
+<area shape="rect" title="Статичний клас для низькорівневої взаємодії з Windows Package Manager API." alt="" coords="5,5,226,139"/>
+</map>
+</div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+Загальнодоступні статичні елементи</h2></td></tr>
+<tr class="memitem:aa2784c1cc432c3227bd79aac691f8091" id="r_aa2784c1cc432c3227bd79aac691f8091"><td class="memItemLeft">static List&lt; string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa2784c1cc432c3227bd79aac691f8091">FindPackagesByPackageFamily</a> (string packageFamily)</td></tr>
+<tr class="memdesc:aa2784c1cc432c3227bd79aac691f8091"><td class="mdescLeft">&#160;</td><td class="mdescRight">Знаходить повні імена пакетів (Package Full Names) для заданого сімейства пакетів.  <br /></td></tr>
+<tr class="memitem:a23328b1ae668332cb33e3cc11dd287ec" id="r_a23328b1ae668332cb33e3cc11dd287ec"><td class="memItemLeft">static string&#160;</td><td class="memItemRight"><a class="el" href="#a23328b1ae668332cb33e3cc11dd287ec">GetPackageVersion</a> (string packageFullName, string defaultVersion)</td></tr>
+<tr class="memdesc:a23328b1ae668332cb33e3cc11dd287ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Отримує версію встановленого пакета.  <br /></td></tr>
+<tr id="pub-static-methods-0" class="groupHeader"><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a3906895bff7b8107690ed0689d4e91e9" id="r_a3906895bff7b8107690ed0689d4e91e9"><td class="memItemLeft">static string&#160;</td><td class="memItemRight"><a class="el" href="#a3906895bff7b8107690ed0689d4e91e9">GetAppStoreName</a> (string packageFullName, string defaultName)</td></tr>
+<tr class="memdesc:a3906895bff7b8107690ed0689d4e91e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Отримує локалізовану назву додатка з його ресурсів (App Store Name).  <br /></td></tr>
+</table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Детальний опис</h2>
+<div class="textblock"><p>Статичний клас для низькорівневої взаємодії з Windows Package Manager API. </p>
+<p>Цей клас використовує P/Invoke виклики (згенеровані CsWin32) для доступу до функцій <code>appmodel.h</code> та <code>shlwapi.h</code>. Він дозволяє отримувати інформацію про встановлені Appx/MSIX пакети, їх версії та локалізовані назви. </p>
+<p><b>Увага:</b> Клас використовує <code>unsafe</code> код для роботи з вказівниками та буферами пам'яті. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Опис методів компонент</h2>
+<a id="aa2784c1cc432c3227bd79aac691f8091" name="aa2784c1cc432c3227bd79aac691f8091"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2784c1cc432c3227bd79aac691f8091">&#9670;&#160;</a></span>FindPackagesByPackageFamily()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">List&lt; string &gt; PackageManager::FindPackagesByPackageFamily </td>
+          <td>(</td>
+          <td class="paramtype">string</td>          <td class="paramname"><span class="paramname"><em>packageFamily</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Знаходить повні імена пакетів (Package Full Names) для заданого сімейства пакетів. </p>
+<dl class="params"><dt>Аргументи</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">packageFamily</td><td>Ім'я сімейства пакетів (Package Family Name), наприклад <code>Microsoft.D3DMappingLayers_8wekyb3d8bbwe</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Повертає</dt><dd>Список рядків, що містять повні імена знайдених пакетів. Повертає порожній список, якщо пакети не знайдено. </dd></dl>
+<dl class="exception"><dt>Обробка виняткових ситуацій</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">Win32Exception</td><td>Викидається, якщо Win32 API повертає помилку (крім <code>ERROR_INSUFFICIENT_BUFFER</code> при першому виклику). </td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Метод викликає PInvoke.FindPackagesByPackageFamily двічі: </p><ol>
+<li>
+Перший раз: щоб отримати кількість пакетів (<code>count</code>) та необхідний розмір буфера (<code>bufferLength</code>). </li>
+<li>
+Другий раз: щоб заповнити виділені буфери реальними даними. </li>
+</ol>
+
+</div>
+</div>
+<a id="a3906895bff7b8107690ed0689d4e91e9" name="a3906895bff7b8107690ed0689d4e91e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3906895bff7b8107690ed0689d4e91e9">&#9670;&#160;</a></span>GetAppStoreName()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">string PackageManager::GetAppStoreName </td>
+          <td>(</td>
+          <td class="paramtype">string</td>          <td class="paramname"><span class="paramname"><em>packageFullName</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string</td>          <td class="paramname"><span class="paramname"><em>defaultName</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Отримує локалізовану назву додатка з його ресурсів (App Store Name). </p>
+<dl class="params"><dt>Аргументи</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">packageFullName</td><td>Повне ім'я пакета.</td></tr>
+    <tr><td class="paramname">defaultName</td><td>Значення за замовчуванням, якщо ресурс не знайдено.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Повертає</dt><dd>Локалізована назва програми або <em>defaultName</em> .</dd></dl>
+<p>Використовує функцію PInvoke.SHLoadIndirectString для завантаження рядка ресурсу за URI схемою: <code>PackageFullName?ms-resource://ResourceName}</code>. <br  />
+ У даному випадку жорстко закодовано ресурс <code>ms-resource://Microsoft.D3DMappingLayers/Resources/AppStoreName</code>, що є специфічним для пакетів сумісності OpenCL/OpenGL. </p>
+
+</div>
+</div>
+<a id="a23328b1ae668332cb33e3cc11dd287ec" name="a23328b1ae668332cb33e3cc11dd287ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23328b1ae668332cb33e3cc11dd287ec">&#9670;&#160;</a></span>GetPackageVersion()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">string PackageManager::GetPackageVersion </td>
+          <td>(</td>
+          <td class="paramtype">string</td>          <td class="paramname"><span class="paramname"><em>packageFullName</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string</td>          <td class="paramname"><span class="paramname"><em>defaultVersion</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Отримує версію встановленого пакета. </p>
+<dl class="params"><dt>Аргументи</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">packageFullName</td><td>Повне ім'я пакета (Package Full Name).</td></tr>
+    <tr><td class="paramname">defaultVersion</td><td>Значення, що повертається у разі помилки або неможливості отримати версію.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Повертає</dt><dd>Рядок у форматі <code>" v{Major}.{Minor}.{Build}.{Revision}"</code> або <em>defaultVersion</em> . </dd></dl>
+<p>Метод використовує PInvoke.OpenPackageInfoByFullName та PInvoke.GetPackageInfo для отримання структури <code>PACKAGE_INFO</code>. Далі відбувається ручний розбір бінарного буфера для вилучення полів версії з <code>PACKAGE_VERSION</code> struct. </p>
+
+</div>
+</div>
+<hr/>Документація цього класу була створена з файлу:<ul>
+<li>Interop/<a class="el" href="_package_manager_8cs.html">PackageManager.cs</a></li>
+</ul>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<div id="page-nav" class="page-nav-panel">
+<div id="page-nav-resize-handle"></div>
+<div id="page-nav-tree">
+<div id="page-nav-contents">
+</div><!-- page-nav-contents -->
+</div><!-- page-nav-tree -->
+</div><!-- page-nav -->
+</div><!-- container -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a href="class_package_manager.html">PackageManager</a></li>
+    <li class="footer">Створено системою <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
+  </ul>
+</div>
+</body>
+</html>

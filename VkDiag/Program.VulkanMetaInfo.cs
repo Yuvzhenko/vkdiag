@@ -11,6 +11,30 @@ namespace VkDiag;
 
 internal static partial class Program
 {
+    /// <summary>
+    /// Виконує комплексну перевірку метаданих Vulkan (реєстрація драйверів та шарів) у системному реєстрі.
+    /// </summary>
+    /// <remarks>
+    /// Метод складається з двох основних частин:
+    /// <list type="number">
+    /// <item>
+    /// <b>Перевірка драйверів:</b> Сканує ключі <c>Drivers</c>.
+    /// <list type="bullet">
+    /// <item>Видаляє записи, що вказують на неіснуючі файли JSON (якщо увімкнено <c>autofix</c>).</item>
+    /// <item>Якщо увімкнено <c>clear</c>, видаляє навіть валідні записи (legacy explicit registration), 
+    /// оскільки сучасні драйвери повинні реєструватися через Plug-n-Play (перевіряється в <see cref="CheckGpuDrivers"/>).</item>
+    /// </list>
+    /// </item>
+    /// <item>
+    /// <b>Перевірка шарів (Layers):</b> Сканує ключі <c>ImplicitLayers</c> та <c>ExplicitLayers</c>.
+    /// <list type="bullet">
+    /// <item>Виявляє та видаляє "мертві" посилання на файли.</item>
+    /// <item>Порівнює версії шарів з <see cref="Constants.KnownProblematicLayers"/> та пропонує вимкнути застарілі.</item>
+    /// <item>Виявляє дублікати шарів (однакові JSON, різні шляхи) та автоматично вимикає старіші версії, залишаючи лише найновішу.</item>
+    /// </list>
+    /// </item>
+    /// </list>
+    /// </remarks>
     private static void CheckVulkanMeta()
     {
         WriteLogLine();
@@ -281,6 +305,22 @@ internal static partial class Program
         }
     }
 
+    /// <summary>
+    /// Парсить JSON-маніфест шару Vulkan та витягує інформацію про версії.
+    /// </summary>
+    /// <param name="layerPath">Повний шлях до JSON-файлу маніфесту шару.</param>
+    /// <returns>
+    /// Список кортежів з інформацією про кожен шар, описаний у файлі (зазвичай один).
+    /// <list type="bullet">
+    /// <item><c>title</c>: Відформатована назва з версією та API.</item>
+    /// <item><c>dllVer</c>: Версія бінарного файлу DLL (якщо знайдено).</item>
+    /// <item><c>apiVer</c>: Версія Vulkan API, яку підтримує шар.</item>
+    /// </list>
+    /// </returns>
+    /// <remarks>
+    /// Метод намагається також знайти відповідну DLL (за відносним шляхом у JSON) 
+    /// і отримати її FileVersion для більш точної ідентифікації.
+    /// </remarks>
     private static List<(string title, Version dllVer, Version apiVer)> GetLayerInfo(string layerPath)
     {
         var layerFilename = Path.GetFileName(layerPath);

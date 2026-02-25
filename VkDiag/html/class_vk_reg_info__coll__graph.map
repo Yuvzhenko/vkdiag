@@ -1,0 +1,5 @@
+<map id="VkRegInfo" name="VkRegInfo">
+<area shape="rect" id="Node000001" title="Кореневий об&#39;єкт (Root DTO) для десеріалізації JSON&#45;маніфесту шару Vulkan." alt="" coords="19,317,148,429"/>
+<area shape="rect" id="Node000002" href="$class_vk_layer.html" title="Представляє об&#39;єкт шару (Layer) з JSON&#45;маніфесту Vulkan." alt="" coords="5,5,161,245"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="84,243,86,301,81,301,82,247"/>
+</map>

@@ -15,8 +15,21 @@ using System.Diagnostics;
 namespace vkdiag.Test;
 
 //test order for correct working console output tests
+/// <summary>
+/// Кастомний впорядкувальник тестів для Xunit.
+/// </summary>
+/// <remarks>
+/// Дозволяє запускати тести у визначеному порядку, використовуючи атрибут <c>[Trait("Order", "number")]</c>.
+/// Це необхідно для тестів, що залежать від консольного виводу або спільного стану, щоб забезпечити послідовність логування.
+/// </remarks>
 public class PriorityOrderer : ITestCaseOrderer
 {
+    /// <summary>
+    /// Впорядковує тестові випадки на основі їх пріоритету.
+    /// </summary>
+    /// <typeparam name="TTestCase">Тип тестового випадку.</typeparam>
+    /// <param name="testCases">Колекція тестів для сортування.</param>
+    /// <returns>Відсортована колекція тестів.</returns>
     public IEnumerable<TTestCase> OrderTestCases<TTestCase>(IEnumerable<TTestCase> testCases) 
         where TTestCase : ITestCase
     {
@@ -32,8 +45,22 @@ public class PriorityOrderer : ITestCaseOrderer
     }
 }
 
+/// <summary>
+/// Базовий клас для тестів, що потребують скидання глобального стану.
+/// </summary>
+/// <remarks>
+/// Оскільки клас <see cref="VkDiag.Program"/> є статичним і зберігає стан (прапорці налаштувань) у статичних полях,
+/// цей клас забезпечує очищення цих полів перед кожним тестом, щоб уникнути побічних ефектів між тестами ("test pollution").
+/// </remarks>
 public class ResetFlags
 {
+    /// <summary>
+    /// Скидає значення приватних статичних полів класу <see cref="VkDiag.Program"/> до значень за замовчуванням.
+    /// </summary>
+    /// <remarks>
+    /// Використовує рефлексію для доступу до полів: <c>ignoreHighPerfCheck</c>, <c>autofix</c>, <c>clear</c>, <c>disableLayers</c>.
+    /// Також скидає публічний прапорець <c>everythingIsFine</c> в <c>true</c>.
+    /// </remarks>
     protected void ResetGlobalFlags()
     {
         string[] flags = { "ignoreHighPerfCheck", "autofix", "clear", "disableLayers" };
@@ -47,9 +74,17 @@ public class ResetFlags
     }
 }
 
+/// <summary>
+/// Тести для перевірки політики іменування JSON.
+/// </summary>
 [Collection("Console Tests")]
 public class SnakeCasePolicyTests : ResetFlags
 {
+    /// <summary>
+    /// Перевіряє коректність конвертації імен властивостей з PascalCase у snake_case.
+    /// </summary>
+    /// <param name="input">Вхідний рядок (PascalCase).</param>
+    /// <param name="expected">Очікуваний результат (snake_case).</param>
     [Theory]
     [InlineData("LibraryPath", "library_path")]
     [InlineData("VulkanDriverName", "vulkan_driver_name")]
@@ -66,9 +101,18 @@ public class SnakeCasePolicyTests : ResetFlags
     }
 }
 
+/// <summary>
+/// Тести для перевірки логіки виявлення Appx пакетів.
+/// </summary>
 [Collection("Console Tests")]
 public class AppxPackagesTests : ResetFlags
 {
+    /// <summary>
+    /// Перевіряє, що програма виявляє несумісний пакет і змінює глобальний статус.
+    /// </summary>
+    /// <remarks>
+    /// Використовує <see cref="FakePackageService"/> для емуляції наявності шкідливого пакета.
+    /// </remarks>
     [Fact]
     public void PackageIsFound()
     {
@@ -97,6 +141,9 @@ public class AppxPackagesTests : ResetFlags
         Console.SetOut(_originalOutput);
     }
 
+    /// <summary>
+    /// Перевіряє, що за відсутності пакетів статус програми залишається "все добре".
+    /// </summary>
     [Fact]
     public void NoPackagesFound()
     {
@@ -119,10 +166,18 @@ public class AppxPackagesTests : ResetFlags
     }
 }
 
+/// <summary>
+/// Тести для перевірки методів логування в консоль.
+/// </summary>
+/// <remarks>
+/// Перехоплює <see cref="Console.Out"/> через <see cref="StringWriter"/> для аналізу виводу.
+/// </remarks>
 [Collection("Console Tests")]
 public class LoggingMethodTests : ResetFlags
 {
-
+    /// <summary>
+    /// Перевіряє форматування рядка логу (наявність квадратних дужок та статусу).
+    /// </summary>
     [Fact, Trait("Order", "1")]
     public void FormatText_Test()
     {
@@ -147,6 +202,12 @@ public class LoggingMethodTests : ResetFlags
         Console.SetOut(_originalOutput);
     }
 
+    /// <summary>
+    /// Перевіряє збереження відступів при форматуванні логів.
+    /// </summary>
+    /// <remarks>
+    /// Тестує логіку, яка вставляє статус `[!]` після пробілів відступу.
+    /// </remarks>
     [Fact, Trait("Order", "2")]
     public void PreserveLeadingSpaces_Test()
     {
@@ -171,6 +232,9 @@ public class LoggingMethodTests : ResetFlags
         Console.SetOut(_originalOutput);
     }
 
+    /// <summary>
+    /// Перевіряє метод виводу порожнього рядка (з workaround для bug з `\r`).
+    /// </summary>
     [Fact, Trait("Order", "3")]
     public void EmptyOverload_Test()
     {
@@ -193,9 +257,15 @@ public class LoggingMethodTests : ResetFlags
     }
 }
 
+/// <summary>
+/// Інтеграційні тести для перевірки драйверів GPU.
+/// </summary>
 [Collection("Console Tests")]
 public class GpuDriverInfoTests : ResetFlags
 {
+    /// <summary>
+    /// Інтеграційний тест: перевіряє, чи знаходить метод драйвери Vulkan у реальному реєстрі поточної машини.
+    /// </summary>
     [Fact]
     public void FindVulkan_IntegrationTest()
     {
@@ -216,6 +286,9 @@ public class GpuDriverInfoTests : ResetFlags
         Assert.True(Program.everythingIsFine);
     }
 
+    /// <summary>
+    /// Перевіряє, що метод не викидає винятків під час виконання.
+    /// </summary>
     [Fact]
     public void Exception_Throwing_IntegrationTest()
     {
@@ -238,6 +311,9 @@ public class GpuDriverInfoTests : ResetFlags
         Console.SetOut(_originalOutput);
     }
 
+    /// <summary>
+    /// Перевіряє наявність ключового слова "NVIDIA" у логах (специфічно для тестового середовища).
+    /// </summary>
     [Fact, Trait("Order", "4")]
     public void HardwareLog_IntegrationTest()
     {
@@ -261,6 +337,9 @@ public class GpuDriverInfoTests : ResetFlags
         Console.SetOut(_originalOutput);
     }
 
+    /// <summary>
+    /// Перевіряє, що програма видає попередження про застарілий драйвер (якщо це так).
+    /// </summary>
     [Fact, Trait("Order", "5")]
     public void ShowUpdateWarning_IntegrationTest()
     {
@@ -286,9 +365,15 @@ public class GpuDriverInfoTests : ResetFlags
 
 }
 
+/// <summary>
+/// Тести перевірки метаданих Vulkan (шарів та реєстрації).
+/// </summary>
 [Collection("Console Tests")]
 public class VulkanMetainfoTests : ResetFlags
 {
+    /// <summary>
+    /// Перевіряє правильність заголовків виводу при скануванні реєстру Vulkan.
+    /// </summary>
     [Fact, Trait("Order", "6")]
     public void CheckVulkanMeta_CorrectOutput_IntegrationTest()
     {
@@ -314,6 +399,9 @@ public class VulkanMetainfoTests : ResetFlags
         Console.SetOut(_originalOutput);
     }
     
+    /// <summary>
+    /// Перевіряє відсутність критичних помилок (винятків) при перевірці метаданих.
+    /// </summary>
     [Fact]
     public void CheckVulkanMeta_ExceptionThrowing_Test()
     {
@@ -332,6 +420,15 @@ public class VulkanMetainfoTests : ResetFlags
         Console.SetOut(_originalOutput);
     }
 
+    /// <summary>
+    /// Тестує парсинг JSON-маніфестів шарів.
+    /// </summary>
+    /// <remarks>
+    /// Створює тимчасові JSON-файли з різним вмістом та перевіряє коректність їх зчитування методом <c>GetLayerInfo</c>.
+    /// </remarks>
+    /// <param name="json_content">Вміст JSON файлу.</param>
+    /// <param name="expected_title">Очікувана назва шару.</param>
+    /// <param name="version">Очікувана версія API.</param>
     [Theory]
     [InlineData(@"{
         ""layer"": {
@@ -396,9 +493,15 @@ public class VulkanMetainfoTests : ResetFlags
     }
 }
 
+/// <summary>
+/// Тести визначення версії та статусу операційної системи.
+/// </summary>
 [Collection("Console Tests")]
 public class OsInfoTests : ResetFlags
 {
+    /// <summary>
+    /// Інтеграційний тест: перевіряє отримання інформації про поточну ОС.
+    /// </summary>
     [Fact, Trait("Order", "7")]
     public void CheckOs_IntegrationTest()
     {
@@ -429,6 +532,12 @@ public class OsInfoTests : ResetFlags
         Console.SetOut(_originalOutput);
     }
 
+    /// <summary>
+    /// Перевіряє коректність визначення маркетингової назви та статусу підтримки для різних версій Windows.
+    /// </summary>
+    /// <param name="str_version">Версія Windows у форматі рядка.</param>
+    /// <param name="expected_status">Очікуваний статус підтримки.</param>
+    /// <param name="expected_name">Очікувана назва версії.</param>
     [Theory]
     //old versions
     [InlineData("5.1.2600", OsSupportStatus.Deprecated, "XP")]
@@ -467,6 +576,9 @@ public class OsInfoTests : ResetFlags
             Assert.Equal(result.name, expected_name);
     }
 
+    /// <summary>
+    /// Перевіряє, що метод <c>HasPerformanceModeProfile</c> додає профіль продуктивності в реєстр, якщо його немає.
+    /// </summary>
     [Fact, Trait("Order", "8")]
     public void HasPerformanceModeProfile_EnsureProfileExists_IntegrationTest()
     {
@@ -495,6 +607,9 @@ public class OsInfoTests : ResetFlags
         }
     }
 
+    /// <summary>
+    /// Перевіряє, що метод виправляє неправильне значення профілю продуктивності (наприклад, "GpuPreference=1").
+    /// </summary>
     [Fact, Trait("Order", "9")]
     public void HasPerformanceModeProfile_FixIncorrectValue_IntegrationTest()
     {
@@ -536,9 +651,17 @@ public class OsInfoTests : ResetFlags
     }
 }
 
+/// <summary>
+/// Тести основного функціоналу програми (версіонування, аргументи, перезапуск).
+/// </summary>
 [Collection("Console Tests")]
 public class MainTests : ResetFlags
 {
+    /// <summary>
+    /// Асинхронний тест перевірки версії через GitHub API (емуляція через підміну полів).
+    /// </summary>
+    /// <param name="version">Тестова версія програми.</param>
+    /// <param name="expected_log">Очікуваний рядок у лозі.</param>
     [Theory]
     [Trait("Order", "10")]
     [InlineData("1.3.13", "VkDiag version: 1.3.13")]
@@ -583,6 +706,11 @@ public class MainTests : ResetFlags
         }
     }
 
+    /// <summary>
+    /// Перевіряє парсинг аргументів командного рядка в статичні прапорці програми.
+    /// </summary>
+    /// <param name="args">Аргументи командного рядка.</param>
+    /// <param name="expected_flags">Імена прапорців, які мають стати <c>true</c>.</param>
     [Theory]
     [Trait("Order", "11")]
     [InlineData(new string[] { "-f" }, "autofix")]
@@ -611,6 +739,9 @@ public class MainTests : ResetFlags
         }
     }
 
+    /// <summary>
+    /// Перевіряє ініціалізацію перевірки прав адміністратора.
+    /// </summary>
     [Fact, Trait("Order", "12")]    
     public void CheckPermissions_Test()
     {
@@ -629,6 +760,12 @@ public class MainTests : ResetFlags
         Assert.IsType<bool>(result);
     }
 
+    /// <summary>
+    /// Перевіряє логіку перезапуску програми: формування аргументів та вибір дієслова (runas/open).
+    /// </summary>
+    /// <remarks>
+    /// Використовує підміну делегатів <c>Program.ProcessStarter</c> та <c>Program.Exiter</c> для запобігання реального перезапуску.
+    /// </remarks>
     [Theory]
     [Trait("Order", "13")]
     [InlineData(false, true, true, false, "runas", "-f -c")]

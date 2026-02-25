@@ -10,6 +10,39 @@ namespace VkDiag;
 
 internal static partial class Program
 {
+    /// <summary>
+    /// Виконує глибоку діагностику встановлених графічних драйверів та їх реєстрації Vulkan.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Метод сканує системний реєстр за шляхом <c>SYSTEM\CurrentControlSet\Control\Video</c>.
+    /// </para>
+    /// Основні етапи роботи:
+    /// <list type="number">
+    /// <item>
+    /// <b>Виявлення GPU:</b> Розділяє знайдені пристрої на активні фізичні GPU та віртуальні/базові адаптери 
+    /// (фільтруючи їх через <see cref="Constants.ServiceBlockList"/>).
+    /// </item>
+    /// <item>
+    /// <b>Перевірка Vulkan:</b> Шукає ключі <c>VulkanDriverName</c> та шари. Перевіряє фізичне існування 
+    /// зазначених JSON-файлів або DLL.
+    /// </item>
+    /// <item>
+    /// <b>Автовиправлення:</b> Якщо увімкнено <c>autofix</c>, видаляє з реєстру записи, що вказують на неіснуючі файли.
+    /// </item>
+    /// <item>
+    /// <b>Перевірка актуальності:</b> Аналізує дату драйвера. 
+    /// Виводить попередження, якщо драйвер старіший за 2 місяці, і помилку, якщо старіший за 6 місяців.
+    /// </item>
+    /// </list>
+    /// </remarks>
+    /// <returns>
+    /// Кортеж (<see cref="ValueTuple{T1, T2}"/>), що містить:
+    /// <list type="bullet">
+    /// <item><c>hasInactive</c>: <c>true</c>, якщо знайдено віртуальні або неактивні адаптери (потрібно для перевірки налаштувань продуктивності).</item>
+    /// <item><c>hasVulkan</c>: <c>true</c>, якщо знайдено хоча б один GPU з коректно зареєстрованим драйвером Vulkan.</item>
+    /// </list>
+    /// </returns>
     private static (bool hasInactive, bool hasVulkan) CheckGpuDrivers()
     {
         var gpuGuidList = new HashSet<string>();

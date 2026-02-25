@@ -11,11 +11,29 @@ namespace VkDiag;
 
 internal static partial class Program
 {
+    /// <summary>
+    /// Словник очікуваних мінімальних версій Vulkan Loader для різних версій ABI.
+    /// </summary>
     private static readonly Dictionary<string, Version> VulkanLoaderExpectedVersions = new()
     {
         ["1"] = new(1, 2, 141, 0),
     };
 
+    /// <summary>
+    /// Перевіряє версію операційної системи, процесор та наявність бібліотек Vulkan Loader.
+    /// </summary>
+    /// <remarks>
+    /// Метод виконує наступні дії:
+    /// <list type="number">
+    /// <item>Отримує інформацію про процесор через WMI (CIM_Processor).</item>
+    /// <item>Отримує інформацію про ОС через WMI (CIM_OperatingSystem).</item>
+    /// <item>Визначає статус підтримки ОС (стабільна, застаріла, пре-реліз) за допомогою <see cref="GetWindowsInfo"/>.</item>
+    /// <item>Перевіряє наявність та версію системних бібліотек <c>vulkan-*.dll</c>.</item>
+    /// </list>
+    /// </remarks>
+    /// <returns>
+    /// Об'єкт <see cref="Version"/>, що представляє версію поточної ОС Windows.
+    /// </returns>
     private static Version CheckOs()
     {
         Version osVer = default;
@@ -141,6 +159,20 @@ internal static partial class Program
         return osVer;
     }
 
+    /// <summary>
+    /// Визначає маркетингову назву та статус підтримки Windows на основі номера збірки.
+    /// </summary>
+    /// <param name="windowsVersion">Версія Windows (Major.Minor.Build.Revision).</param>
+    /// <returns>
+    /// Кортеж, що містить:
+    /// <list type="bullet">
+    /// <item><c>status</c>: Статус підтримки (<see cref="OsSupportStatus"/>).</item>
+    /// <item><c>name</c>: Читабельна назва версії (наприклад, "11 24H2").</item>
+    /// </list>
+    /// </returns>
+    /// <remarks>
+    /// База даних версій включає Windows XP, Vista, 7, 8, 10 та 11, а також розрізняє інсайдерські збірки.
+    /// </remarks>
     private static (OsSupportStatus status, string name) GetWindowsInfo(Version windowsVersion)
         => windowsVersion.Major switch
         {
@@ -209,6 +241,18 @@ internal static partial class Program
             _ => (OsSupportStatus.Unknown, null)
         };
 
+    /// <summary>
+    /// Перевіряє та налаштовує профіль високої продуктивності GPU для поточного процесу.
+    /// </summary>
+    /// <returns>
+    /// <c>true</c>, якщо режим високої продуктивності вже увімкнено або успішно налаштовано.
+    /// <c>false</c>, якщо налаштування було змінено і потрібен перезапуск програми.
+    /// </returns>
+    /// <remarks>
+    /// Метод перевіряє реєстр <c>Software\Microsoft\DirectX\UserGpuPreferences</c>.
+    /// Якщо для поточного .exe файлу не встановлено <c>GpuPreference=2</c> (High Performance),
+    /// метод додає відповідний запис і повертає <c>false</c>.
+    /// </remarks>
     private static bool HasPerformanceModeProfile()
     {
         if (Assembly.GetEntryAssembly()?.Location is not { } imagePath)

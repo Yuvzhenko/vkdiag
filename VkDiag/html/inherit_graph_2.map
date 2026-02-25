@@ -1,0 +1,7 @@
+<map id="Графічна ієрархія класів" name="Графічна ієрархія класів">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,31,126,57"/>
+<area shape="rect" id="Node000001" href="$class_fake_package_service.html" title="Реалізація&#45;заглушка (Mock/Stub) сервісу пакетів для використання в юніт&#45;тестах." alt="" coords="215,5,360,32"/>
+<area shape="poly" id="edge1_Node000000_Node000001" title=" " alt="" coords="141,33,217,26,212,28,142,38"/>
+<area shape="rect" id="Node000002" href="$class_program_1_1_windows_package_service.html" title="Реалізація сервісу пакетів для середовища Windows." alt="" coords="174,56,401,83"/>
+<area shape="poly" id="edge2_Node000000_Node000002" title=" " alt="" coords="141,50,176,56,170,57,141,55"/>
+</map>

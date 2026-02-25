@@ -1,0 +1,5 @@
+<map id="FakePackageService" name="FakePackageService">
+<area shape="rect" id="Node000001" title="Реалізація&#45;заглушка (Mock/Stub) сервісу пакетів для використання в юніт&#45;тестах." alt="" coords="5,123,161,256"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="28,5,138,75"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="84,87,86,124,81,123,82,92"/>
+</map>

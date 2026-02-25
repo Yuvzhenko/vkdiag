@@ -1,3 +1,5 @@
+[![Documentation](https://img.shields.io/badge/Doxygen-Documentation-blue)](https://Yuvzhenko.github.io/vkdiag/)
+
 Глосарій проєкту VkDiag
 
 1. Предметна область (Vulkan та Графіка)

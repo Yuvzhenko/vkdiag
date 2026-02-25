@@ -15,6 +15,9 @@ using VkDiag.POCOs;
 
 namespace VkDiag;
 
+/// <summary>
+/// Головний клас програми, що містить точку входу, управління життєвим циклом та основний потік виконання.
+/// </summary>
 internal static partial class Program
 {
     
@@ -23,7 +26,13 @@ internal static partial class Program
     private static bool clear;
     private static bool disableLayers;
     private static bool ignoreHighPerfCheck;
+
+    /// <summary>
+    /// Глобальний прапорець, що вказує на відсутність проблем. 
+    /// Якщо false — буде показано попередження або червоний статус.
+    /// </summary>
     internal static bool everythingIsFine = true;
+
     private static bool hasBrokenEntries;
     private static bool hasProperVulkanDrivers;
     private static bool hasExplicitDriverReg;
@@ -31,9 +40,41 @@ internal static partial class Program
     private static bool disabledConflictingLayers = true;
     private static bool removedExplicitDriverReg = true;
     private static bool fixedEverything = true;
-    public static Action<ProcessStartInfo> ProcessStarter = psi => Process.Start(psi);
-    public static Action<int> Exiter = code => Environment.Exit(code);
 
+    /// <summary>
+    /// Делегат для запуску процесів.
+    /// </summary>
+    /// <remarks>
+    /// Використовується для можливості перехоплення запуску процесів (mocking) у Unit-тестах.
+    /// За замовчуванням використовує <see cref="Process.Start(ProcessStartInfo)"/>.
+    /// </remarks>
+    public static Action<ProcessStartInfo> ProcessStarter = psi => Process.Start(psi);
+
+    /// <summary>
+    /// Делегат для завершення роботи програми.
+    /// </summary>
+    /// <remarks>
+    /// Використовується для запобігання реальному закриттю процесу під час тестування.
+    /// За замовчуванням використовує <see cref="Environment.Exit(int)"/>.
+    /// </remarks>
+    public static Action<int> Exiter = code => Environment.Exit(code);
+    
+    /// <summary>
+    /// Асинхронна точка входу в додаток.
+    /// </summary>
+    /// <param name="args">Аргументи командного рядка.</param>
+    /// <returns>Завдання, що представляє виконання програми.</returns>
+    /// <remarks>
+    /// Виконує наступні кроки:
+    /// <list type="number">
+    /// <item>Перевірка на запуск єдиного екземпляра через <see cref="System.Threading.Mutex"/>.</item>
+    /// <item>Перевірка прав адміністратора та парсинг аргументів.</item>
+    /// <item>Налаштування консолі та кодування.</item>
+    /// <item>Перевірка архітектури ОС та версії програми (GitHub).</item>
+    /// <item>Запуск діагностики (ОС, пакети Appx, драйвери GPU, шари Vulkan).</item>
+    /// <item>Відображення інтерактивного меню.</item>
+    /// </list>
+    /// </remarks>
     public static async Task Main(string[] args)
     {
         try
@@ -112,6 +153,13 @@ internal static partial class Program
         }
     }
 
+    /// <summary>
+    /// Перевіряє наявність нової версії VkDiag через GitHub API.
+    /// </summary>
+    /// <remarks>
+    /// Порівнює локальну версію <see cref="Constants.VkDiagVersion"/> з тегами релізів на GitHub.
+    /// Повідомляє про наявність стабільних оновлень або пре-релізів (Beta).
+    /// </remarks>
     private static async Task CheckVkDiagVersionAsync()
     {
         try
@@ -149,6 +197,10 @@ internal static partial class Program
         }
     }
 
+    /// <summary>
+    /// Розбирає аргументи командного рядка за допомогою бібліотеки <see cref="Mono.Options"/>.
+    /// </summary>
+    /// <param name="args">Масив аргументів.</param>
     private static void GetOptions(string[] args)
     {
         var help = false;
@@ -173,11 +225,30 @@ internal static partial class Program
         }
     }
 
+    /// <summary>
+    /// Перевіряє, чи запущено процес із правами адміністратора.
+    /// </summary>
     private static void CheckPermissions()
         => isAdmin = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 
+    /// <summary>
+    /// Перезапускає програму з підвищенням прав, якщо це необхідно.
+    /// </summary>
     private static void RestartIfNotElevated() => Restart();
-        
+    
+    /// <summary>
+    /// Виконує перезапуск поточної програми з новими параметрами або правами.
+    /// </summary>
+    /// <param name="onlyToElevate">
+    /// Якщо true, перезапуск не відбудеться, якщо користувач вже має права адміністратора.
+    /// </param>
+    /// <param name="requireElevation">
+    /// Чи потрібно запитувати підвищення прав (verb "runas").
+    /// </param>
+    /// <remarks>
+    /// Зберігає поточні аргументи командного рядка (-f, -c, -d) для нового процесу.
+    /// Також підтримує коректний перезапуск всередині Windows Terminal.
+    /// </remarks>
     private static void Restart(bool onlyToElevate = true, bool requireElevation = true)
     {
         if (isAdmin && onlyToElevate)
@@ -213,6 +284,18 @@ internal static partial class Program
         Exiter(0);
     }
 
+    /// <summary>
+    /// Відображає підсумкове меню дій на основі результатів діагностики.
+    /// </summary>
+    /// <remarks>
+    /// Якщо знайдено проблеми, пропонує користувачеві автоматично їх виправити:
+    /// <list type="bullet">
+    /// <item>Видалити зламані записи реєстру.</item>
+    /// <item>Вимкнути конфліктні шари.</item>
+    /// <item>Очистити явну реєстрацію драйверів.</item>
+    /// </list>
+    /// Якщо користувач погоджується, викликає <see cref="Restart"/> з відповідними прапорцями.
+    /// </remarks>
     private static void ShowMenu()
     {
         bool restartNeeded = false;
@@ -275,6 +358,14 @@ internal static partial class Program
         Environment.Exit(0);
     }
 
+    /// <summary>
+    /// Запитує підтвердження у користувача (Y/N).
+    /// </summary>
+    /// <param name="question">Текст запитання.</param>
+    /// <returns>
+    /// <c>true</c>, якщо натиснуто 'Y'.
+    /// <c>false</c>, якщо натиснуто 'N' або 'Escape'.
+    /// </returns>
     private static bool AskUserYesNo(string question)
     {
         Console.Write($"{question} [Y/N]: ");
